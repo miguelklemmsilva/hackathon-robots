@@ -10,7 +10,7 @@
 - Conduct hourly standup
 - Manages team communication
 
-### Robotis Motion Engineer
+### Robotics Motion Engineer
 **Name:** Miguel   
 
 **Responsibilities:**
