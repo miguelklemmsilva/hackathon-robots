@@ -1,11 +1,15 @@
-# controllers/main_controller.py
 #!/opt/homebrew/bin/python3
 """
 Main Controller for Spot Autonomous Deployment and Data Collection in Webots.
+
+This controller initializes the robot's devices and sensors, commands the robot
+to assume a standing posture, and then demonstrates locomotion by switching
+between in-place rotations (left, right, and none) using the LocomotionController API.
 """
 
 from controller import Robot
 import sys
+from enum import Enum
 
 from utils.config import TIME_STEP, MOTOR_NAMES, CAMERA_NAMES, LED_NAMES, LIDAR_NAME, GPS_NAME, INERTIAL_UNIT_NAME
 from utils.logger import setup_logger
@@ -18,6 +22,7 @@ from sensors.camera_sensor import CameraSensor
 from sensors.gps_sensor import GPSSensor
 from sensors.inertial_unit_sensor import InertialUnitSensor
 
+# Define motor names for Spot's 12 joints.
 MOTOR_NAMES = [
     "front left shoulder abduction motor",  # 0
     "front left shoulder rotation motor",   # 1
@@ -33,22 +38,34 @@ MOTOR_NAMES = [
     "rear right elbow motor"                  # 11
 ]
 
+# Define an enum for intuitive rotation directions.
+
+
+class RotationDirection(Enum):
+    LEFT = 1
+    NONE = 0
+    RIGHT = -1
+
 
 def main():
+    # Instantiate the Webots robot and determine the time step.
     robot = Robot()
     time_step = int(robot.getBasicTimeStep())
     logger = setup_logger('spot', 'spot_autonomous.log')
 
+    # Retrieve motor, camera, and LED devices.
     motors = [robot.getDevice(name) for name in MOTOR_NAMES]
     cameras = [robot.getDevice(name) for name in CAMERA_NAMES]
     leds = [robot.getDevice(name) for name in LED_NAMES]
     for led in leds:
-        led.set(1)
+        led.set(1)  # Activate LEDs
 
+    # Define a step function to advance the simulation and handle exit.
     def step():
         if robot.step(time_step) == -1:
             sys.exit(0)
 
+    # Initialize sensor interfaces.
     lidar_sensor = LidarSensor(robot, LIDAR_NAME, time_step, logger=logger)
     camera_sensors = {name: CameraSensor(
         robot, name, time_step, logger=logger) for name in CAMERA_NAMES}
@@ -56,30 +73,32 @@ def main():
     inertial_unit_sensor = InertialUnitSensor(
         robot, INERTIAL_UNIT_NAME, time_step, logger=logger)
 
+    # Initialize controllers.
     posture_controller = PostureController(motors, time_step, step)
     locomotion_controller = LocomotionController(
         robot, motors, time_step, step)
     mission_planner = MissionPlanner(
         gps_sensor, inertial_unit_sensor, lidar_sensor, locomotion_controller, logger)
 
-    # Start with a standing posture.
+    # Begin with a standing posture.
     posture_controller.stand_up(4.0)
     logger.info("Robot stood up and is ready for autonomous navigation.")
 
+    # Set an initial walking gait (with no rotation by default).
     gait_duration = 5.0
-    locomotion_controller.set_gait(gait_duration, rotation_direction=0)
+    locomotion_controller.set_gait(
+        gait_duration,
+        rotation_direction=RotationDirection.NONE.value,
+        turn_rate_multiplier=1.0  # Default turn rate
+    )
 
     # Main simulation loop.
     while robot.step(time_step) != -1:
         current_time = robot.getTime()
 
-        if current_time < 5.0:
-            # First 5 seconds: rotate left in place
-            locomotion_controller.set_rotation(-1)
-        elif current_time < 10.0:
-            # Next 5 seconds: rotate right in place
-            locomotion_controller.set_rotation(1)
+        locomotion_controller.set_rotation(RotationDirection.RIGHT.value, 3.0)
 
+        # Update the locomotion controller to compute and apply motor positions.
         locomotion_controller.update()
 
 
