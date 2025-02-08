@@ -6,10 +6,10 @@ maximizedDockId: -1
 centralWidgetVisible: 1
 renderingMode: PLAIN
 orthographicViewHeight: 1
-textFiles: 2 "protos/Spot.proto" "controllers/my_controller/my_controller.py" "controllers/my_controller/controllers/locomotion_controller.py"
+textFiles: -1
 consoles: Console:All:All
-renderingDevicePerspectives: Spot:left flank camera;0;0.591667;0;0
-renderingDevicePerspectives: Spot:left head camera;0;0.591667;0;0
-renderingDevicePerspectives: Spot:rear camera;0;0.591667;0;0
-renderingDevicePerspectives: Spot:right flank camera;0;0.591667;0;0
-renderingDevicePerspectives: Spot:right head camera;0;0.591667;0;0
+renderingDevicePerspectives: Spot:left flank camera;0;0.291151;0;0.334501
+renderingDevicePerspectives: Spot:left head camera;0;0.188889;0;0
+renderingDevicePerspectives: Spot:rear camera;0;0.419444;0;0.00175131
+renderingDevicePerspectives: Spot:right flank camera;0;0.291151;0;0.334501
+renderingDevicePerspectives: Spot:right head camera;0;0.161963;0.610308;0

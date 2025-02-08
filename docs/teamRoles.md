@@ -9,8 +9,9 @@
 - Conduct hourly standup and desigin pitch
 - Manages team communication
 
-### Robotis Motion Engineer
-**Name:** Miguel  
+### Robotics Motion Engineer
+**Name:** Miguel   
+
 **Responsibilities:**
 - Develops and optimizes motion planning algorithms
 - Integrates robotic control systems
