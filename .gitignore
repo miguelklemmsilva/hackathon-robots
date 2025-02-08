@@ -1,2 +1,6 @@
 .venv
+<<<<<<< HEAD
 controllers/my_controller/spot_autonomous.log
+=======
+__pycache__/
+>>>>>>> 1f2b7e232d6b050cc69dee63791bcec3da0a384b
