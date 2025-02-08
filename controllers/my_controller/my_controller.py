@@ -76,29 +76,32 @@ def main():
     # Initialize controllers.
     posture_controller = PostureController(motors, time_step, step)
     locomotion_controller = LocomotionController(
-        robot, motors, time_step, step)
+        robot, motors, time_step, step, logger)
     mission_planner = MissionPlanner(
         gps_sensor, inertial_unit_sensor, lidar_sensor, locomotion_controller, logger)
 
-    # Begin with a standing posture.
+    # Define patrol waypoints (x, z coordinates)
+    patrol_points = [
+        (0.0, 5.0),    # 5 meters forward
+        (5.0, 5.0),    # 5 meters right
+        (5.0, 0.0),    # 5 meters back
+        (0.0, 0.0)     # Return to start
+    ]
+
+    # Set the patrol path
+    mission_planner.set_patrol_path(patrol_points)
+
+    # Begin with a standing posture
     posture_controller.stand_up(4.0)
     logger.info("Robot stood up and is ready for autonomous navigation.")
+    locomotion_controller.set_gait(5.0, 0.0, 1.0)
 
-    # Set an initial walking gait (with no rotation by default).
-    gait_duration = 5.0
-    locomotion_controller.set_gait(
-        gait_duration,
-        rotation_direction=RotationDirection.NONE.value,
-        turn_rate_multiplier=1.0  # Default turn rate
-    )
-
-    # Main simulation loop.
+    # Main simulation loop
     while robot.step(time_step) != -1:
-        current_time = robot.getTime()
+        # Update mission planner to handle navigation
+        mission_planner.update()
 
-        locomotion_controller.set_rotation(RotationDirection.RIGHT.value, 3.0)
-
-        # Update the locomotion controller to compute and apply motor positions.
+        # Update the locomotion controller to compute and apply motor positions
         locomotion_controller.update()
 
 

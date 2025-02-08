@@ -24,7 +24,7 @@ class RotationDirection(Enum):
 
 
 class LocomotionController:
-    def __init__(self, robot, motors, time_step, step_callback):
+    def __init__(self, robot, motors, time_step, step_callback, logger):
         """
         Initialize the locomotion controller.
 
@@ -39,6 +39,7 @@ class LocomotionController:
         self.time_step = time_step
         self.step = step_callback
         self.start_time = self.robot.getTime()
+        self.logger = logger
 
         # Initialize SpotModel and BezierGait for inverse kinematics and trajectory generation.
         self.spot = SpotModel()
@@ -49,7 +50,7 @@ class LocomotionController:
         # Motor offsets for each joint type (to compensate for mechanical configuration)
         self.motor_offsets = {
             'abduction': 0.0,
-            'rotation': 0.6,  # ~30 degrees offset
+            'rotation': 0.5,  # ~30 degrees offset
             'elbow': -1.19    # ~-67.7 degrees offset
         }
 
@@ -124,7 +125,7 @@ class LocomotionController:
             rotation_value = rotation.value
         else:
             rotation_value = rotation
-
+            
         self.gait_mode = "rotate"
         self.step_length = 0.03  # Smaller step length for in-place rotation
         # Compute turning rate using the rotation value and multiplier
@@ -161,10 +162,11 @@ class LocomotionController:
         if self.gait_mode == "stand":
             self.set_standing_positions()
         else:
-            # Simplified assumption: all feet are in contact with the ground.
+            # Generate new foot trajectories using the BezierGait generator
+            # Simplified assumption: all feet in contact
             contacts = [1, 1, 1, 1]
 
-            # Generate new foot trajectories using the BezierGait generator.
+            # Generate new foot trajectories
             T_bf = self.bzg.GenerateTrajectory(
                 self.step_length,
                 self.lateral_fraction,
@@ -177,17 +179,17 @@ class LocomotionController:
                 contacts
             )
 
-            # Calculate joint angles using inverse kinematics (SpotModel).
+            # Calculate joint angles using inverse kinematics
             orn = np.array([self.rolld, self.pitchd, self.yawd])
             pos = np.array([self.xd, self.yd, self.zd])
             joint_angles = -self.spot.IK(orn, pos, T_bf)
 
-            # Flatten the list of joint angles for each leg.
+            # Apply joint angles to motors
             motor_positions = []
             for leg in joint_angles:
                 motor_positions.extend(leg)
 
-            # Apply motor offsets and command the motors.
+            # Command the motors
             for i, motor in enumerate(self.motors):
                 motor.setPosition(
                     self.apply_motor_offset(i, motor_positions[i]))
