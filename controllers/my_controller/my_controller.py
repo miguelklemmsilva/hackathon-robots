@@ -56,12 +56,9 @@ def main():
     inertial_unit_sensor = InertialUnitSensor(
         robot, INERTIAL_UNIT_NAME, time_step, logger=logger)
 
-    def get_heading_callback():
-        return inertial_unit_sensor.get_heading()
-
     posture_controller = PostureController(motors, time_step, step)
     locomotion_controller = LocomotionController(
-        robot, motors, time_step, step, get_heading_callback)
+        robot, motors, time_step, step)
     mission_planner = MissionPlanner(
         gps_sensor, inertial_unit_sensor, lidar_sensor, locomotion_controller, logger)
 
@@ -69,10 +66,22 @@ def main():
     posture_controller.stand_up(4.0)
     logger.info("Robot stood up and is ready for autonomous navigation.")
 
+    gait_duration = 5.0
+    locomotion_controller.set_gait(gait_duration, rotation_direction=0)
 
+    # Main simulation loop.
     while robot.step(time_step) != -1:
-        locomotion_controller.set_gait("walk", 0.1)
+        current_time = robot.getTime()
+
+        if current_time < 5.0:
+            # First 5 seconds: rotate left in place
+            locomotion_controller.set_rotation(-1)
+        elif current_time < 10.0:
+            # Next 5 seconds: rotate right in place
+            locomotion_controller.set_rotation(1)
+
         locomotion_controller.update()
+
 
 if __name__ == '__main__':
     main()

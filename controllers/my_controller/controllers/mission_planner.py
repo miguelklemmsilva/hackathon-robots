@@ -66,9 +66,11 @@ class MissionPlanner:
             self.logger.info("Rotating to align with desired heading.")
             # A short rotation command; the locomotion controller will update this each time step.
             if heading_error > 0:
-                self.locomotion.set_gait("rotate", 0.1, {"direction": 1})
+                pass
+                # self.locomotion.set_gait("rotate", 0.1, {"direction": 1})
             else:
-                self.locomotion.set_gait("rotate", 0.1, {"direction": -1})
+                pass
+                # self.locomotion.set_gait("rotate", 0.1, {"direction": -1})
         else:
             self.logger.info("Heading aligned. Driving forward.")
-            self.locomotion.set_gait("walk", 0.1)
+            # self.locomotion.set_gait("walk", 0.1)
