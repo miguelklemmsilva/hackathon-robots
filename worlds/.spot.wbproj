@@ -8,8 +8,8 @@ renderingMode: PLAIN
 orthographicViewHeight: 1
 textFiles: 2 "my_controller.py" "main_controller.py" "my_controller.py"
 consoles: Console:All:All
-renderingDevicePerspectives: Spot:left flank camera;1;0.597222;0;0
-renderingDevicePerspectives: Spot:left head camera;1;0.597222;0;0
-renderingDevicePerspectives: Spot:rear camera;1;0.597222;0;0
-renderingDevicePerspectives: Spot:right flank camera;1;0.597222;0;0
-renderingDevicePerspectives: Spot:right head camera;1;0.597222;0;0
+renderingDevicePerspectives: Spot:left flank camera;0;0.597222;0;0
+renderingDevicePerspectives: Spot:left head camera;0;0.597222;0;0
+renderingDevicePerspectives: Spot:rear camera;0;0.597222;0;0
+renderingDevicePerspectives: Spot:right flank camera;0;0.597222;0;0
+renderingDevicePerspectives: Spot:right head camera;0;0.597222;0;0

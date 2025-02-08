@@ -14,7 +14,7 @@ from utils.logger import setup_logger
 
 # Import controllers and sensor modules.
 from controllers.posture_controller import PostureController
-from controllers.motion_controller import LocomotionController
+from controllers.locomotion_controller import LocomotionController
 from controllers.mission_planner import MissionPlanner
 from sensors.lidar_sensor import LidarSensor
 from sensors.camera_sensor import CameraSensor
@@ -47,7 +47,9 @@ def main():
 
     # Instantiate controllers.
     posture_controller = PostureController(motors, time_step, step)
-    locomotion_controller = LocomotionController(robot, time_step, step)
+    # Note: Pass 'motors' to the locomotion controller.
+    locomotion_controller = LocomotionController(
+        robot, motors, time_step, step)
     mission_planner = MissionPlanner(
         lidar_sensor, locomotion_controller, logger)
 
@@ -64,8 +66,6 @@ def main():
         left_camera = camera_sensors.get("left head camera")
         if left_camera:
             _ = left_camera.process_image()
-            # Optionally, save or further process the image.
-            # e.g., cv2.imwrite('latest_image.png', processed_image)
 
 
 if __name__ == '__main__':
