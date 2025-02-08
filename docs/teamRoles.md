@@ -3,11 +3,10 @@
 ## Team Members
 
 ### Project Manager
-**Name:** Zaid   
-
+**Name:** Zaid  
 **Responsibilities:**
 - Oversees project progress
-- Conduct hourly standup
+- Conduct hourly standup and desigin pitch
 - Manages team communication
 
 ### Robotis Motion Engineer
