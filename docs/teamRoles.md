@@ -3,63 +3,38 @@
 ## Team Members
 
 ### Project Manager
-**Name:** [Name Here]  
+**Name:** Zaid  
 **Responsibilities:**
 - Oversees project progress
-- Ensures deadlines are met
+- Conduct hourly standup
 - Manages team communication
 
-### Lead Developer
-**Name:** [Name Here]  
+### Robotis Motion Engineer
+**Name:** Miguel 
 **Responsibilities:**
-- Leads technical development
-- Reviews code and ensures best practices
-- Supports junior developers
+- Develops and optimizes motion planning algorithms
+- Integrates robotic control systems
+- Ensures smooth and reliable robot movements
+
 
 ### Frontend Developer
-**Name:** [Name Here]  
+**Name:** Joslin 
 **Responsibilities:**
 - Designs and implements UI/UX
 - Ensures responsiveness and accessibility
-- Works closely with designers
+- Research how to make design usable for an engineer
 
-### Backend Developer
-**Name:** [Name Here]  
+### Cloud Infrastructure Engineer
+**Name:** Aliff  
 **Responsibilities:**
-- Develops and maintains server-side logic
-- Implements database structures
-- Ensures API functionality
+- Designs and maintains cloud-based infrastructure
+- Implements scalable and secure cloud solutions
+- Manages cloud deployments and automation
 
-### Quality Assurance Engineer
-**Name:** [Name Here]  
+### AI and Computer Vision Engineer
+**Name:** Eric 
 **Responsibilities:**
-- Tests software for bugs and issues
-- Ensures product quality
-- Works on automated testing
-
-### UI/UX Designer
-**Name:** [Name Here]  
-**Responsibilities:**
-- Designs user interfaces
-- Conducts user research
-- Creates wireframes and prototypes
-
-### DevOps Engineer
-**Name:** [Name Here]  
-**Responsibilities:**
-- Manages deployment pipelines
-- Maintains infrastructure
-- Ensures system reliability
-
-### Business Analyst
-**Name:** [Name Here]  
-**Responsibilities:**
-- Gathers requirements
-- Analyzes market trends
-- Communicates with stakeholders
-
----
-
-*Last Updated: [Date]*
-
+- Develops and optimizes AI models for vision processing
+- Implements real-time object detection and tracking
+- Enhances image and video analysis capabilities
 
