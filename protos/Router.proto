@@ -1,4 +1,6 @@
+#VRML_SIM R2025a utf8
 PROTO Router [
+    
   field SFVec3f translation 0 0 0      # Position of the router
   field SFString name "Router"         # Name of the router
 ]

@@ -19,6 +19,52 @@ from controllers.locomotion_controller import LocomotionController
 from controllers.mission_planner import MissionPlanner
 from sensors.lidar_sensor import LidarSensor
 from sensors.camera_sensor import CameraSensor
+
+
+import math
+
+# UWB anchor positions (x, y, z)
+anchors = [
+    (0, 0, 0),   # Anchor 1
+    (5, 0, 0),   # Anchor 2
+    (2.5, 0, 5)  # Anchor 3
+]
+
+def get_distances(x, y, z):
+    """Calculate distances from Spot to each anchor."""
+    distances = []
+    for anchor in anchors:
+        d = math.sqrt((x - anchor[0])**2 + (y - anchor[1])**2 + (z - anchor[2])**2)
+        distances.append(d)
+    return distances
+
+import numpy as np
+
+def trilaterate(anchors, distances):
+    """Solve for (x, y, z) given anchor positions and distances."""
+    A = []
+    b = []
+
+    for i in range(len(anchors) - 1):
+        x1, y1, z1 = anchors[i]
+        x2, y2, z2 = anchors[-1]
+
+        d1, d2 = distances[i], distances[-1]
+        
+        A.append([2 * (x1 - x2), 2 * (y1 - y2), 2 * (z1 - z2)])
+        b.append(d1**2 - d2**2 - (x1**2 + y1**2 + z1**2) + (x2**2 + y2**2 + z2**2))
+    
+    A = np.array(A)
+    b = np.array(b)
+
+    estimated_pos = np.linalg.lstsq(A, b, rcond=None)[0]
+    return estimated_pos
+
+
+
+
+
+
 from sensors.gps_sensor import GPSSensor
 from sensors.inertial_unit_sensor import InertialUnitSensor
 
@@ -95,6 +141,16 @@ def main():
     posture_controller.stand_up(4.0)
     logger.info("Robot stood up and is ready for autonomous navigation.")
     locomotion_controller.set_gait(5.0, 0.0, 1.0)
+
+    gps_values = gps_sensor.get_values()
+    x, y, z = gps_values[0], gps_values[1], gps_values[2]
+    distances = get_distances(x, y, z)
+
+    logger.info(f"UWB Distances: {distances}")
+    # Example usage:
+    estimated_pos = trilaterate(anchors, distances)
+    logger.info(f"Estimated Position: {estimated_pos}")
+
 
     # Main simulation loop
     while robot.step(time_step) != -1:
