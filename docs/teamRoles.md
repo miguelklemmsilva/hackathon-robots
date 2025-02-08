@@ -11,8 +11,7 @@
 - Manages team communication
 
 ### Robotis Motion Engineer
-**Name:** Miguel   
-
+**Name:** Miguel  
 **Responsibilities:**
 - Develops and optimizes motion planning algorithms
 - Integrates robotic control systems
