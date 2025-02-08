@@ -1,17 +1,10 @@
 # sensors/camera_sensor.py
-
 import cv2
 import numpy as np
 
 
 class CameraSensor:
     def __init__(self, robot, device_name, time_step, logger=None):
-        """
-        robot: Webots Robot instance.
-        device_name: Name of the camera device.
-        time_step: Simulation time step (ms).
-        logger: Optional logger instance.
-        """
         self.robot = robot
         self.device_name = device_name
         self.time_step = time_step
@@ -20,10 +13,10 @@ class CameraSensor:
         if self.camera:
             self.camera.enable(2 * self.time_step)
             if self.logger:
-                self.logger.info(f"Camera '{device_name}' enabled.")
+                self.logger.info(f"Camera '{self.device_name}' enabled.")
         else:
             if self.logger:
-                self.logger.warning(f"Camera '{device_name}' not found.")
+                self.logger.warning(f"Camera '{self.device_name}' not found.")
 
     def get_image(self):
         return self.camera.getImage()
@@ -35,10 +28,6 @@ class CameraSensor:
         return self.camera.getHeight()
 
     def process_image(self):
-        """
-        Process the image to detect hazards.
-        For example, detect high red intensity (which might indicate fire).
-        """
         width = self.get_width()
         height = self.get_height()
         image = self.get_image()

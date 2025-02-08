@@ -1,7 +1,5 @@
 # utils/config.py
-
-# Webots time step (in milliseconds)
-TIME_STEP = 32  # You can adjust this based on your simulation settings
+TIME_STEP = 32  # Simulation time step in milliseconds
 
 # Device configuration
 NUMBER_OF_LEDS = 8
@@ -26,16 +24,25 @@ LED_NAMES = [
     "right middle down led", "right bottom led"
 ]
 
-# LiDAR configuration
 LIDAR_NAME = "Lidar"
-OBSTACLE_THRESHOLD = 1.0  # meters
 
-# Predefined postures (the order must correspond to MOTOR_NAMES grouping)
+# New sensors
+GPS_NAME = "gps"
+INERTIAL_UNIT_NAME = "inertial unit"
+
+# Navigation and planning parameters
+GOAL_POSITION = [5.0, 5.0]  # Target (x, z) coordinates (meters)
+K_ATTRACTIVE = 1.0          # Gain for attractive force toward goal
+K_REPULSIVE = 1.5           # Gain for repulsive force from obstacles
+OBSTACLE_THRESHOLD = 1.0    # Minimum safe distance from obstacles (meters)
+REPULSIVE_RANGE = 2.0       # Range within which obstacles repel (meters)
+
+# Predefined postures (joint positions must match the motor grouping)
 POSTURES = {
     "stand_up": [-0.1, 0.0, 0.0,
-                 0.1, 0.0, 0.0,
+                 0.1,  0.0, 0.0,
                  -0.1, 0.0, 0.0,
-                 0.1, 0.0, 0.0],
+                 0.1,  0.0, 0.0],
     "lie_down": [-0.40, -0.99, 1.59,
                  0.40, -0.99, 1.59,
                  -0.40, -0.99, 1.59,
@@ -44,5 +51,4 @@ POSTURES = {
                  0.20, -0.40, -0.19,
                  -0.40, -0.90, 1.18,
                  0.40, -0.90, 1.18],
-    # You can add more postures here.
 }

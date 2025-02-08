@@ -1,0 +1,14 @@
+#VRML_SIM R2021a utf8
+PROTO InertialUnitDevice [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+  field SFString name "inertial unit"
+  field SFInt32 timeStep 32
+] {
+  InertialUnit {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    timeStep IS timeStep
+  }
+}

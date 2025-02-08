@@ -43,10 +43,20 @@ PROTO Spot [
         numberOfLayers 1
         # Additional LiDAR-specific fields can be added here
       	}
+      	
       Accelerometer {
+        name "accelerometer"
+        translation 0 0.2 0    # Adjust translation as needed.
+        rotation 0 1 0 0
       }
+      
+      # GPS sensor: provides position data.
       GPS {
+        name "gps"
+        translation 0 0.1 0    # Adjust translation as needed.
+        rotation 0 1 0 0
       }
+
       Gyro {
       }
       InertialUnit {

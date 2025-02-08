@@ -2,12 +2,6 @@
 
 class LidarSensor:
     def __init__(self, robot, device_name, time_step, logger=None):
-        """
-        robot: Webots Robot instance.
-        device_name: Name of the LiDAR device.
-        time_step: Simulation time step (ms).
-        logger: Optional logger instance.
-        """
         self.robot = robot
         self.device_name = device_name
         self.time_step = time_step

@@ -1,13 +1,14 @@
 # utils/logger.py
-
 import logging
-
+import os
 
 def setup_logger(name: str, log_file: str, level=logging.INFO):
-    """Set up a logger with a given name and log file."""
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+    """Set up a logger that writes to both a file and the console."""
+    if os.path.exists(log_file):
+        os.remove(log_file)
 
-    # Create a logger
+    formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
+
     logger = logging.getLogger(name)
     logger.setLevel(level)
 
@@ -23,6 +24,3 @@ def setup_logger(name: str, log_file: str, level=logging.INFO):
     logger.addHandler(ch)
 
     return logger
-
-# Example:
-# logger = setup_logger('spot', 'spot_autonomous.log')
