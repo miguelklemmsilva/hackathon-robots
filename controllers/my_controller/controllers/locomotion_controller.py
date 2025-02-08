@@ -50,7 +50,7 @@ class LocomotionController:
         # Motor offsets for each joint type (to compensate for mechanical configuration)
         self.motor_offsets = {
             'abduction': 0.0,
-            'rotation': 0.5,  # ~30 degrees offset
+            'rotation': 0.55,  # ~30 degrees offset
             'elbow': -1.19    # ~-67.7 degrees offset
         }
 
