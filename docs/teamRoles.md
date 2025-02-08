@@ -4,6 +4,7 @@
 
 ### Project Manager
 **Name:** Zaid  
+
 **Responsibilities:**
 - Oversees project progress
 - Conduct hourly standup
@@ -11,6 +12,7 @@
 
 ### Robotis Motion Engineer
 **Name:** Miguel 
+
 **Responsibilities:**
 - Develops and optimizes motion planning algorithms
 - Integrates robotic control systems
@@ -19,6 +21,7 @@
 
 ### Frontend Developer
 **Name:** Joslin 
+
 **Responsibilities:**
 - Designs and implements UI/UX
 - Ensures responsiveness and accessibility
@@ -26,6 +29,7 @@
 
 ### Cloud Infrastructure Engineer
 **Name:** Aliff  
+
 **Responsibilities:**
 - Designs and maintains cloud-based infrastructure
 - Implements scalable and secure cloud solutions
@@ -33,6 +37,7 @@
 
 ### AI and Computer Vision Engineer
 **Name:** Eric 
+
 **Responsibilities:**
 - Develops and optimizes AI models for vision processing
 - Implements real-time object detection and tracking
