@@ -1,0 +1,31 @@
+PROTO Router [
+  field SFVec3f translation 0 0 0      # Position of the router
+  field SFString name "Router"         # Name of the router
+]
+{
+  Transform {
+    translation IS translation
+    children [
+      Shape {
+        appearance PBRAppearance {
+          baseColor 1 0 0              # Red color for visibility
+          roughness 1
+          metalness 0
+        }
+        geometry Cylinder {             # Cylinder to represent the router
+          height 0.3
+          radius 0.15
+        }
+      },
+      Shape {
+        appearance PBRAppearance {
+          baseColor 1 1 1              # White for antenna
+        }
+        geometry Cylinder {
+          height 0.5
+          radius 0.05
+        }
+      }
+    ]
+  }
+}
