@@ -145,6 +145,31 @@ async def websocket_client(logger):
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
 
+async def fire_detection_loop(logger, camera_sensors, leds):
+    """Continuously detects fire without blocking movement."""
+    while True:
+        fire_detected = False  # Reset detection per loop
+
+        for cam_name, cam_sensor in camera_sensors.items():
+            logger.info(f"Looking for fire using {cam_name}...")
+            frame, detected = cam_sensor.detect_fire()
+
+            if detected:
+                fire_detected = True
+                logger.info(f"🔥 Fire detected by {cam_name}!")
+
+        if fire_detected:
+            # Blink LED lights without affecting movement
+            for led in leds:
+                led.set(0)
+            await asyncio.sleep(0.1)  # Short delay
+            for led in leds:
+                led.set(1)
+            await asyncio.sleep(0.1)
+
+        # Run this check every ~0.5s
+        await asyncio.sleep(0.5)
+
 async def main():
     # Instantiate the Webots robot and determine the time step.
     print("ONNX Runtime is installed and working!")
@@ -207,6 +232,9 @@ async def main():
     # create an asyncio task for the websocket client
     websocket_task = asyncio.create_task(websocket_client(logger))
 
+    fire_detection_task = asyncio.create_task(fire_detection_loop(logger, camera_sensors, leds))
+
+
     # Main simulation loop
     while robot.step(time_step) != -1:
         # Get sensor data
@@ -230,39 +258,13 @@ async def main():
         # Update the locomotion controller to compute and apply motor positions
         locomotion_controller.update()
 
-<<<<<<< Updated upstream
         # give control to the event loopto allow async tasks to run
         await asyncio.sleep(0)
     
     # close websocket task once simulation ends
     websocket_task.cancel()
-=======
-        # Fire detection using cameras
-        for cam_name, cam in zip(CAMERA_NAMES, cameras):
-            logger.info("Looking for fire...")
-            frame, fire_detected = camera_sensors[cam_name].detect_fire()
-            
-            if fire_detected:
-                logger.info(f"🔥 Fire detected by {cam_name}! Stopping movement and activating response!")
-                
-                # Stop moving
-                locomotion_controller.set_rotation(RotationDirection.NONE.value, 0.0)
-                
-                # Blink LED lights
-                for led in leds:
-                    led.set(0)
-                robot.step(100)
-                for led in leds:
-                    led.set(1)
-                
-                # Log fire detection
-                logger.info("🔥 Fire response activated!")
 
-                # Show the fire detection window (for debugging)
-                cv2.imshow(f"Fire Detection - {cam_name}", frame)
-                cv2.waitKey(1)
-
->>>>>>> Stashed changes
+    fire_detection_task.cancel()
 
 if __name__ == '__main__':
     # main()
