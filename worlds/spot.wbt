@@ -13,6 +13,7 @@ EXTERNPROTO "../protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/animals/protos/Cat.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/animals/protos/Dog.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/animals/protos/Cow.proto"
+EXTERNPROTO "../protos/Flame.proto"
 
 WorldInfo {
   info [
@@ -31,6 +32,9 @@ RectangleArena {
   name "rectangle arena(1)"
   floorSize 50 50
   wallAppearance NULL
+}
+Flame {
+  translation 1 4 0
 }
 Cow {
   translation 10 0 2
