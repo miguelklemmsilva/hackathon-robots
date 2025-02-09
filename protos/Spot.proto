@@ -41,7 +41,7 @@ PROTO Spot [
         maxRange 10.0
         resolution 0.01
         numberOfLayers 1
-        fieldOfView 6.28  # Full 360-degree view
+        fieldOfView 2.0944  # Full 360-degree view
       }
       Accelerometer {
         name "accelerometer"

@@ -79,15 +79,15 @@ class LocomotionController:
         self.avoiding_obstacle = False
         self.avoidance_direction = None
         self.avoidance_start_time = None
-        self.min_avoidance_time = 4.0  # Increased minimum turning time
+        self.min_avoidance_time = 1.5  # Increased minimum turning time
         self.max_avoidance_time = 8.0  # Increased maximum avoidance time
         # Increased cooldown to prevent rapid switching
         self.post_avoidance_cooldown = 3.0
         self.last_avoidance_end_time = 0
-        self.forward_recovery_time = 2.0  # Increased forward movement time
+        self.forward_recovery_time = 5.0  # Increased forward movement time
         self.forward_recovery_attempts = 0
         self.max_recovery_attempts = 3
-        self.recovery_angle_threshold = math.pi / 6  # 30 degrees
+        self.recovery_angle_threshold = math.pi / 5  # 30 degrees
 
     def set_gait(self, duration, rotation_direction=0, turn_rate_multiplier=1.0):
         """
@@ -197,25 +197,19 @@ class LocomotionController:
             if time_avoiding > self.min_avoidance_time:
                 # Only attempt forward movement if center is clear and we haven't exceeded attempts
                 if not obstacles['center'] and self.forward_recovery_attempts < self.max_recovery_attempts:
-                    # Check if side sectors are relatively clear
-                    side_clear = (
-                        not obstacles['left'] and not obstacles['right'])
-                    if side_clear:
-                        self.set_gait(self.forward_recovery_time,
-                                      RotationDirection.NONE, 0.5)
-                        self.forward_recovery_attempts += 1
-                        self.logger.info(
-                            f"Attempting forward recovery ({self.forward_recovery_attempts}/{self.max_recovery_attempts})")
-                    else:
-                        # Continue turning if sides are blocked
-                        self.set_rotation(
-                            self.avoidance_direction, turn_rate_multiplier=1.2)
+                    self.set_gait(self.forward_recovery_time,
+                                  RotationDirection.NONE, 0.5)
+                    self.forward_recovery_attempts += 1
+                    self.logger.info(
+                        f"Attempting forward recovery ({self.forward_recovery_attempts}/{self.max_recovery_attempts})")
                 else:
-                    # Resume turning if forward path is blocked or too many attempts
-                    self.set_rotation(self.avoidance_direction,
-                                      turn_rate_multiplier=1.2)
-                return True
-
+                    # Continue turning if sides are blocked
+                    self.set_rotation(
+                        self.avoidance_direction, turn_rate_multiplier=1.2)
+            else:
+                # Resume turning if forward path is blocked or too many attempts
+                self.set_rotation(self.avoidance_direction,
+                                  turn_rate_multiplier=1.2)
             return True
 
         # Start new avoidance maneuver if needed

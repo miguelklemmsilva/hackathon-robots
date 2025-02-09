@@ -129,6 +129,7 @@ def main():
         (0.0, 5.0),    # 5 meters forward
         (5.0, 5.0),    # 5 meters right
         (10.0, 0.0),    # 5 meters back
+        (0.0, 0.0)
     ]
 
     # Set the patrol path
