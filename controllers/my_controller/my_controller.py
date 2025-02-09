@@ -11,8 +11,11 @@ between in-place rotations (left, right, and none) using the LocomotionControlle
 import asyncio
 import websockets
 import json
-import threading
+from datetime import datetime, timezone
 import numpy as np
+from sensors.accelerometer_sensor import AccelerometerSensor
+from sensors.compass_sensor import CompassSensor
+from sensors.gyro_sensor import GyroSensor
 from sensors.inertial_unit_sensor import InertialUnitSensor
 from sensors.gps_sensor import GPSSensor
 from controller import Robot
@@ -95,30 +98,47 @@ class RotationDirection(Enum):
 
 WEBSOCKET_URL = "wss://lqq17im9ld.execute-api.eu-west-2.amazonaws.com/dev/"
 
-async def websocket_client(logger):
+async def websocket_client(logger, gps_sensor, lidar_sensor, inertial_unit_sensor, accelerometer_sensor, gyro_sensor, compass_sensor):
     """Handles WebSocket communication with AWS API Gateway."""
     try:
         async with websockets.connect(WEBSOCKET_URL) as ws:
             logger.info(f"Connected to WebSocket server: {WEBSOCKET_URL}")
-            
+
             while True:
-                # Send a message periodically
+                # Collect sensor data
+                gps_values = gps_sensor.get_values()
+                lidar_min_distance = lidar_sensor.get_min_distance()
+                heading = inertial_unit_sensor.get_heading()
+                # acceleration = accelerometer_sensor.get_acceleration()
+                # angular_velocity = gyro_sensor.get_angular_velocity()
+                # compass_bearing = compass_sensor.get_bearing()
+                utc_datetime = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+                sensor_data = {
+                    "type": "sensor_data",
+                    "timestamp": utc_datetime,
+                    "gps": {"x": gps_values[0], "y": gps_values[1], "z": gps_values[2]},
+                    "lidar": {"min_distance": lidar_min_distance},
+                    "inertial_unit": {"heading": heading},
+                    # "accelerometer": {"x": acceleration[0], "y": acceleration[1], "z": acceleration[2]},
+                    # "gyro": {"angular_velocity_x": angular_velocity[0], "angular_velocity_y": angular_velocity[1], "angular_velocity_z": angular_velocity[2]},
+                }
+
+                 # Prepare the message with "action" and "payload"
                 message = {
                     "action": "broadcast",
-                    "message": f"message at timestamp: {asyncio.get_event_loop().time()}"
+                    "payload": sensor_data
                 }
+
+                message_size = len(json.dumps(message).encode("utf-8"))
+                logger.info(f"Sending message of size: {message_size / 1024:.2f} KB")
+
+                # Send the sensor data
                 await ws.send(json.dumps(message))
-                logger.info(f"Sent message: {message}")
+                logger.info(f"Sent sensor data: {message}")
 
-                # Wait for a response (optional)
-                try:
-                    response = await asyncio.wait_for(ws.recv(), timeout=5.0)
-                    logger.info(f"Received response: {response}")
-                except asyncio.TimeoutError:
-                    logger.warning("No response from WebSocket server.")
-
-                # Wait for a 30 seconds before sending the next message
-                await asyncio.sleep(30)
+                # Wait for 5 seconds before sending the next sensor data
+                await asyncio.sleep(5.0)
 
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
@@ -174,8 +194,10 @@ async def main():
     gps_sensor = GPSSensor(robot, GPS_NAME, time_step, logger=logger)
     inertial_unit_sensor = InertialUnitSensor(
         robot, INERTIAL_UNIT_NAME, time_step, logger=logger)
-
-    # Initialize controllers.
+    accelerometer_sensor = AccelerometerSensor(robot, "accelerometer", time_step, logger=logger)
+    gyro_sensor = GyroSensor(robot, "gyro", time_step, logger=logger)
+    compass_sensor = CompassSensor(robot, "compass", time_step, logger=logger)
+        # Initialize controllers.
     posture_controller = PostureController(motors, time_step, step)
     locomotion_controller = LocomotionController(
         robot, motors, time_step, step, logger)
@@ -209,7 +231,7 @@ async def main():
     logger.info(f"Estimated Position: {estimated_pos}")
 
     # create an asyncio task for the websocket client
-    websocket_task = asyncio.create_task(websocket_client(logger))
+    websocket_task = asyncio.create_task(websocket_client(logger, gps_sensor, lidar_sensor, inertial_unit_sensor, accelerometer_sensor, gyro_sensor, compass_sensor))
 
     fire_detection_task = asyncio.create_task(fire_detection_loop(logger, camera_sensors, leds))
 
