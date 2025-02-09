@@ -14,7 +14,7 @@ class MissionPlanner:
         # Initialize patrol variables
         self.patrol_points = []  # List of (x, z) coordinates to patrol
         self.current_goal_index = 0
-        self.waypoint_threshold = 2.  # Distance in meters to consider waypoint reached
+        self.waypoint_threshold = 1.  # Distance in meters to consider waypoint reached
 
     def set_patrol_path(self, points):
         """Set a list of points for the robot to patrol.
