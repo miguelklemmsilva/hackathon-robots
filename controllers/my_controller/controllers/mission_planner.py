@@ -90,7 +90,7 @@ class MissionPlanner:
             self.logger.warning("No GPS data available.")
             return
 
-        current_pos = (gps_values[0], gps_values[2])
+        current_pos = (gps_values[0], gps_values[1])
 
         # Check if we've reached the current waypoint
         if self.check_waypoint_reached(current_pos):
@@ -113,10 +113,4 @@ class MissionPlanner:
             # Added turn rate multiplier
             self.locomotion.set_rotation(rotation_direction, 1.0)
         else:
-            # Move forward with a slight turn to maintain heading
-            turn_correction = heading_error / heading_tolerance  # normalized correction
-            # Increased step velocity
-            self.locomotion.set_gait(5.0, turn_correction, 1.0)
-
-        self.logger.info(f"Current pos: {current_pos}, Goal: {self.get_current_goal()}, " +
-                         f"Heading error: {heading_error:.2f}")
+            self.locomotion.set_rotation(0)

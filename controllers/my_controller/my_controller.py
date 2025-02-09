@@ -7,6 +7,9 @@ to assume a standing posture, and then demonstrates locomotion by switching
 between in-place rotations (left, right, and none) using the LocomotionController API.
 """
 
+import numpy as np
+from sensors.inertial_unit_sensor import InertialUnitSensor
+from sensors.gps_sensor import GPSSensor
 from controller import Robot
 import sys
 from enum import Enum
@@ -30,15 +33,16 @@ anchors = [
     (2.5, 0, 5)  # Anchor 3
 ]
 
+
 def get_distances(x, y, z):
     """Calculate distances from Spot to each anchor."""
     distances = []
     for anchor in anchors:
-        d = math.sqrt((x - anchor[0])**2 + (y - anchor[1])**2 + (z - anchor[2])**2)
+        d = math.sqrt((x - anchor[0])**2 +
+                      (y - anchor[1])**2 + (z - anchor[2])**2)
         distances.append(d)
     return distances
 
-import numpy as np
 
 def trilaterate(anchors, distances):
     """Solve for (x, y, z) given anchor positions and distances."""
@@ -50,23 +54,17 @@ def trilaterate(anchors, distances):
         x2, y2, z2 = anchors[-1]
 
         d1, d2 = distances[i], distances[-1]
-        
+
         A.append([2 * (x1 - x2), 2 * (y1 - y2), 2 * (z1 - z2)])
-        b.append(d1**2 - d2**2 - (x1**2 + y1**2 + z1**2) + (x2**2 + y2**2 + z2**2))
-    
+        b.append(d1**2 - d2**2 - (x1**2 + y1**2 + z1**2) +
+                 (x2**2 + y2**2 + z2**2))
+
     A = np.array(A)
     b = np.array(b)
 
     estimated_pos = np.linalg.lstsq(A, b, rcond=None)[0]
     return estimated_pos
 
-
-
-
-
-
-from sensors.gps_sensor import GPSSensor
-from sensors.inertial_unit_sensor import InertialUnitSensor
 
 # Define motor names for Spot's 12 joints.
 MOTOR_NAMES = [
@@ -130,8 +128,7 @@ def main():
     patrol_points = [
         (0.0, 5.0),    # 5 meters forward
         (5.0, 5.0),    # 5 meters right
-        (5.0, 0.0),    # 5 meters back
-        (0.0, 0.0)     # Return to start
+        (10.0, 0.0),    # 5 meters back
     ]
 
     # Set the patrol path
@@ -151,11 +148,25 @@ def main():
     estimated_pos = trilaterate(anchors, distances)
     logger.info(f"Estimated Position: {estimated_pos}")
 
-
     # Main simulation loop
     while robot.step(time_step) != -1:
-        # Update mission planner to handle navigation
-        mission_planner.update()
+        # Get sensor data
+        obstacles = lidar_sensor.detect_obstacles()
+        sector_distances = lidar_sensor.get_sector_distances()
+
+        # Check for obstacles and handle avoidance
+        if any(obstacles.values()):
+            if locomotion_controller.avoid_obstacle(obstacles):
+                logger.info(f"Obstacle avoidance active. Distances - Left: {sector_distances['left']:.2f}m, "
+                            f"Center: {sector_distances['center']:.2f}m, Right: {sector_distances['right']:.2f}m")
+        elif locomotion_controller.avoiding_obstacle:
+            # If no obstacles and we were avoiding, resume normal movement
+            locomotion_controller.resume_normal_movement()
+            logger.info("Path clear, resuming normal movement")
+
+        # Only update mission planner if we're not actively avoiding obstacles
+        if not locomotion_controller.avoiding_obstacle:
+            mission_planner.update()
 
         # Update the locomotion controller to compute and apply motor positions
         locomotion_controller.update()

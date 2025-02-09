@@ -75,6 +75,13 @@ class LocomotionController:
         self.gait_mode = "stand"
         self.rotation_direction = 0
 
+        # Enhanced obstacle avoidance state
+        self.avoiding_obstacle = False
+        self.avoidance_direction = None
+        self.avoidance_start_time = None
+        self.min_avoidance_time = 2.0  # Minimum time to maintain avoidance behavior
+        self.max_avoidance_time = 5.0  # Maximum time before giving up current avoidance
+
     def set_gait(self, duration, rotation_direction=0, turn_rate_multiplier=1.0):
         """
         Initiate a forward walk gait for the specified duration.
@@ -125,7 +132,7 @@ class LocomotionController:
             rotation_value = rotation.value
         else:
             rotation_value = rotation
-            
+
         self.gait_mode = "rotate"
         self.step_length = 0.03  # Smaller step length for in-place rotation
         # Compute turning rate using the rotation value and multiplier
@@ -150,6 +157,72 @@ class LocomotionController:
             return angle + self.motor_offsets['rotation']
         else:  # elbow joint
             return angle + self.motor_offsets['elbow']
+
+    def avoid_obstacle(self, obstacles):
+        """
+        Determine appropriate avoidance behavior based on obstacle detection
+        Returns: True if avoidance maneuver was initiated or is ongoing
+        """
+        current_time = self.robot.getTime()
+
+        # Check if we should continue existing avoidance maneuver
+        if self.avoiding_obstacle:
+            time_avoiding = current_time - self.avoidance_start_time
+
+            # If we've been avoiding for too long, try a different direction
+            if time_avoiding > self.max_avoidance_time:
+                self.logger.info("Switching avoidance direction after timeout")
+                self.avoidance_direction = (RotationDirection.RIGHT
+                                            if self.avoidance_direction == RotationDirection.LEFT
+                                            else RotationDirection.LEFT)
+                self.avoidance_start_time = current_time
+                self.set_rotation(self.avoidance_direction,
+                                  turn_rate_multiplier=1.5)
+                return True
+
+            # Continue current avoidance if minimum time hasn't elapsed
+            if time_avoiding < self.min_avoidance_time:
+                return True
+
+            # Check if path is clear
+            if not obstacles['center']:
+                return True
+
+        # Start new avoidance maneuver if needed
+        if not self.avoiding_obstacle and (obstacles['center'] or obstacles['left'] or obstacles['right']):
+            self.avoiding_obstacle = True
+            self.avoidance_start_time = current_time
+
+            # Determine best avoidance direction
+            if obstacles['center']:
+                if obstacles['left'] and not obstacles['right']:
+                    self.avoidance_direction = RotationDirection.RIGHT
+                elif obstacles['right'] and not obstacles['left']:
+                    self.avoidance_direction = RotationDirection.LEFT
+                else:
+                    # When both sides are blocked or clear, choose based on mission goal
+                    self.avoidance_direction = RotationDirection.RIGHT
+            elif obstacles['left']:
+                self.avoidance_direction = RotationDirection.RIGHT
+            else:  # obstacle on right
+                self.avoidance_direction = RotationDirection.LEFT
+
+            self.set_rotation(self.avoidance_direction,
+                              turn_rate_multiplier=1.2)
+            self.logger.info(
+                f"Starting avoidance maneuver: {self.avoidance_direction}")
+            return True
+
+        return False
+
+    def resume_normal_movement(self):
+        """Reset obstacle avoidance state and resume normal movement"""
+        if self.avoiding_obstacle:
+            self.avoiding_obstacle = False
+            self.avoidance_direction = None
+            self.avoidance_start_time = None
+            self.set_gait(5.0, RotationDirection.NONE)
+            self.logger.info("Resuming normal movement")
 
     def update(self):
         """
