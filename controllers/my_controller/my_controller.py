@@ -16,24 +16,8 @@ import numpy as np
 from sensors.inertial_unit_sensor import InertialUnitSensor
 from sensors.gps_sensor import GPSSensor
 from controller import Robot
-import cv2
 import sys
 from enum import Enum
-
-import os
-print(f"Webots is using Python: {sys.executable}")
-print("Checking model path:", os.path.exists("runs/detect/train18/weights/best.onnx"))
-print("📂 Webots Working Directory:", os.getcwd())
-print("📁 Looking for model at:", os.path.abspath("runs/detect/train18/weights/best.onnx"))
-print("✅ Model Exists:", os.path.exists(os.path.abspath("runs/detect/train18/weights/best.onnx")))
-
-try:
-    import onnxruntime
-    print("✅ ONNX Runtime is installed and working!")
-except ModuleNotFoundError:
-    print("❌ ONNX Runtime is NOT installed in this Python environment.")
-
-import onnxruntime
 
 from utils.config import TIME_STEP, MOTOR_NAMES, CAMERA_NAMES, LED_NAMES, LIDAR_NAME, GPS_NAME, INERTIAL_UNIT_NAME
 from utils.logger import setup_logger
@@ -46,12 +30,6 @@ from sensors.camera_sensor import CameraSensor
 
 
 import math
-
-import onnxruntime
-print("ONNX Runtime is installed and working!")
-
-print("hello whatsup")
-print(sys.executable)
 
 # UWB anchor positions (x, y, z)
 anchors = [

@@ -4,11 +4,9 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "../protos/Spot.proto"
 EXTERNPROTO "../protos/RectangleArena.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/animals/protos/Cat.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/animals/protos/Dog.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/animals/protos/Cow.proto"
 EXTERNPROTO "../protos/Flame.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/appearances/protos/Parquetry.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2025a/projects/objects/traffic/protos/WorkBarrier.proto"
 
 WorldInfo {
   info [
@@ -18,9 +16,8 @@ WorldInfo {
   title "Spot Robot demo"
 }
 Viewpoint {
-  orientation -0.37815987480208074 0.3187783331003593 0.8691233994292358 1.876995346235306
-  position 1.1929245320079098 -7.985428135730595 8.966513956937337
-  follow "cardboard box(5)"
+  orientation -0.15716571992288653 0.9415530367466868 0.2979543848883805 1.021338686863278
+  position -9.223328089817215 -4.887637623333825 25.327897640139394
   followSmoothness 0
 }
 RectangleArena {
@@ -35,12 +32,33 @@ RectangleArena {
 Flame {
   translation 0 3 0
 }
-Cow {
-  translation 10 0 2
-}
 WorkBarrier {
   translation 11.13 4.19 0
   name "work barrier(3)"
+}
+WorkBarrier {
+  translation 4.5 0.25 0
+  name "work barrier(1)"
+}
+WorkBarrier {
+  translation 9.51 -2.18 0
+  rotation 0 0 1 -0.523595307179586
+  name "work barrier(2)"
+}
+WorkBarrier {
+  translation 5.53538 9.37546 0
+  rotation 0 0 1 -2.6179953071795863
+  name "work barrier(4)"
+}
+WorkBarrier {
+  translation 9.22132 10.2909 0
+  rotation 0 0 1 -2.6179953071795863
+  name "work barrier(5)"
+}
+WorkBarrier {
+  translation 4.06658 4.43956 0
+  rotation 0 0 1 -2.6179953071795863
+  name "work barrier(6)"
 }
 TrafficCone {
   translation 11.56 11.84 0
@@ -58,8 +76,31 @@ TrafficCone {
   name "traffic cone(3)"
 }
 Spot {
-  translation -0.04985231854657799 -0.10642616449015826 0.5934327185727518
-  rotation 0.07511169875428793 -0.1390904870619517 0.9874269943236887 0.03393029389957471
+  hidden position_0_0 -0.005591966805443762
+  hidden position_0_1 -0.0035129641926943816
+  hidden position_0_2 0.0036599233560755486
+  hidden position_0_3 0.005341957781065703
+  hidden rotation_19 0 0 -0.9999999999999999 0.00559196680545813
+  hidden position_19_0 -0.3181442371696708
+  hidden rotation_20 -1 0 0 0.31814423716967044
+  hidden position_20_1 0.3908510897665566
+  hidden rotation_22 0.9999999999999999 0 0 0.3908510897665565
+  hidden rotation_23 0 0 -1 0.003512964192665084
+  hidden position_23_0 -0.4719137056329277
+  hidden rotation_24 -1 0 0 0.47191370563292817
+  hidden position_24_1 0.6750500418413887
+  hidden rotation_26 1 0 0 0.6750500418413888
+  hidden rotation_27 0 0 1 0.0036599233560229145
+  hidden position_27_0 -0.47153176875140124
+  hidden rotation_28 -1 0 0 0.47153176875140124
+  hidden position_28_1 0.6734870679939855
+  hidden rotation_30 1 0 0 0.6734870679939857
+  hidden rotation_31 0 0 1 0.005341957781099224
+  hidden position_31_0 -0.31651921918784787
+  hidden rotation_32 -1 0 0 0.3165192191878481
+  hidden position_32_1 0.39411444401365336
+  hidden rotation_34 1 0 0 0.39411444401365303
+  translation 0 0 0
   controller "my_controller"
 }
 TexturedBackground {
@@ -68,80 +109,4 @@ TexturedBackground {
 }
 TexturedBackgroundLight {
   texture "factory"
-}
-PlasticCrate {
-  translation -0.276141 -3.89221 0
-  rotation 0 0 -1 0.916294
-  size 0.3 0.5 0.2
-}
-TrafficCone {
-  translation 4.63526 -3.89768 0.228719
-  rotation 0.0003109999849598856 -0.9999999516395034 0 1.997414
-}
-TrafficCone {
-  translation 3.38354 -3.49778 0
-  rotation 0 0 -1 1.0472
-  name "traffic cone(1)"
-}
-TrafficCone {
-  translation 10.4147 0.518071 0
-  rotation 0 0 1 -1.047195307179586
-  name "traffic cone(2)"
-}
-TrafficCone {
-  translation 3.98473 -4.41983 0
-  rotation 0 0 1 -1.047195307179586
-  name "traffic cone(3)"
-}
-OilBarrel {
-  translation 4.67 0 0.44
-}
-OilBarrel {
-  translation 4.69 -0.68 0.44
-  name "oil barrel(1)"
-}
-OilBarrel {
-  translation 4.53 -1.34 0.44
-  name "oil barrel(2)"
-}
-OilBarrel {
-  translation 4.05 -0.22 0.44
-  name "oil barrel(3)"
-}
-OilBarrel {
-  translation 3.89 -1.04 0.44
-  name "oil barrel(4)"
-}
-OilBarrel {
-  translation 4.36 -1.04 1.32
-  name "oil barrel(5)"
-}
-OilBarrel {
-  translation 0.45 2.99 0.56
-  name "oil barrel(7)"
-}
-OilBarrel {
-  translation 4.25 -0.27 1.32
-  name "oil barrel(6)"
-}
-CardboardBox {
-  translation 1.71781 -4.16794 0.28
-  rotation 0 0 1 -0.785395307179586
-  name "cardboard box(4)"
-  size 0.3 0.3 0.3
-}
-CardboardBox {
-  translation 1.47741 -4.40834 0.28
-  rotation 0 0 1 -0.785395307179586
-  name "cardboard box(5)"
-  size 0.3 0.3 0.3
-}
-PlatformCart {
-  translation 1.6398762177132924 -4.33012375726932 -0.0030075399957101845
-  rotation 0.0006598445231108974 0.00027455209012439537 0.9999997446131451 -2.356195454986049
-}
-RubberDuck {
-  translation -0.42087789994905034 -1.7437811863385597 0.05988432787098853
-  rotation 4.4278267955387233e-07 -6.174367023575906e-07 0.9999999999997113 1.2442614707741078
-  scale 3
 }
