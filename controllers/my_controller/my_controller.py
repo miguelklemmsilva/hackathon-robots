@@ -16,8 +16,24 @@ import numpy as np
 from sensors.inertial_unit_sensor import InertialUnitSensor
 from sensors.gps_sensor import GPSSensor
 from controller import Robot
+import cv2
 import sys
 from enum import Enum
+
+import os
+print(f"Webots is using Python: {sys.executable}")
+print("Checking model path:", os.path.exists("runs/detect/train18/weights/best.onnx"))
+print("📂 Webots Working Directory:", os.getcwd())
+print("📁 Looking for model at:", os.path.abspath("runs/detect/train18/weights/best.onnx"))
+print("✅ Model Exists:", os.path.exists(os.path.abspath("runs/detect/train18/weights/best.onnx")))
+
+try:
+    import onnxruntime
+    print("✅ ONNX Runtime is installed and working!")
+except ModuleNotFoundError:
+    print("❌ ONNX Runtime is NOT installed in this Python environment.")
+
+import onnxruntime
 
 from utils.config import TIME_STEP, MOTOR_NAMES, CAMERA_NAMES, LED_NAMES, LIDAR_NAME, GPS_NAME, INERTIAL_UNIT_NAME
 from utils.logger import setup_logger
@@ -30,6 +46,12 @@ from sensors.camera_sensor import CameraSensor
 
 
 import math
+
+import onnxruntime
+print("ONNX Runtime is installed and working!")
+
+print("hello whatsup")
+print(sys.executable)
 
 # UWB anchor positions (x, y, z)
 anchors = [
@@ -123,8 +145,34 @@ async def websocket_client(logger):
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
 
+async def fire_detection_loop(logger, camera_sensors, leds):
+    """Continuously detects fire without blocking movement."""
+    while True:
+        fire_detected = False  # Reset detection per loop
+
+        for cam_name, cam_sensor in camera_sensors.items():
+            logger.info(f"Looking for fire using {cam_name}...")
+            frame, detected = cam_sensor.detect_fire()
+
+            if detected:
+                fire_detected = True
+                logger.info(f"🔥 Fire detected by {cam_name}!")
+
+        if fire_detected:
+            # Blink LED lights without affecting movement
+            for led in leds:
+                led.set(0)
+            await asyncio.sleep(0.1)  # Short delay
+            for led in leds:
+                led.set(1)
+            await asyncio.sleep(0.1)
+
+        # Run this check every ~0.5s
+        await asyncio.sleep(0.5)
+
 async def main():
     # Instantiate the Webots robot and determine the time step.
+    print("ONNX Runtime is installed and working!")
     robot = Robot()
     time_step = int(robot.getBasicTimeStep())
     logger = setup_logger('spot', 'spot_autonomous.log')
@@ -185,6 +233,9 @@ async def main():
     # create an asyncio task for the websocket client
     websocket_task = asyncio.create_task(websocket_client(logger))
 
+    fire_detection_task = asyncio.create_task(fire_detection_loop(logger, camera_sensors, leds))
+
+
     # Main simulation loop
     while robot.step(time_step) != -1:
         # Get sensor data
@@ -213,6 +264,8 @@ async def main():
     
     # close websocket task once simulation ends
     websocket_task.cancel()
+
+    fire_detection_task.cancel()
 
 if __name__ == '__main__':
     # main()

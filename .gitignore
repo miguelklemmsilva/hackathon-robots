@@ -1,3 +1,7 @@
 .venv
 __pycache__/
 controllers/my_controller/spot_autonomous.log
+results/
+runs/
+datasets/
+fire_dataset/
