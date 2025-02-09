@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import onnxruntime as ort
+import os
 
 class CameraSensor:
     def __init__(self, robot, device_name, time_step, logger=None):
@@ -18,9 +19,16 @@ class CameraSensor:
             if self.logger:
                 self.logger.warning(f"Camera '{self.device_name}' not found.")
 
-        # Load YOLO model
+        # Load YOLO model if available
         self.model_path = "../../runs/detect/train18/weights/best.onnx"
-        self.session = ort.InferenceSession(self.model_path)
+        if os.path.exists(self.model_path):
+            self.session = ort.InferenceSession(self.model_path)
+            if self.logger:
+                self.logger.info(f"YOLO model loaded successfully from {self.model_path}.")
+        else:
+            self.session = None
+            # if self.logger:
+            #     self.logger.warning(f"Model not found at {self.model_path}. Skipping ONNX initialization.")
 
     def get_image(self):
         return self.camera.getImage()
@@ -33,6 +41,11 @@ class CameraSensor:
 
     def detect_fire(self):
         """Detect fire using YOLOv8."""
+        if self.session is None:
+            # if self.logger:
+                # self.logger.warning("No YOLO session available. Skipping fire detection.")
+            return None, False
+
         width = self.get_width()
         height = self.get_height()
         image = self.get_image()
@@ -44,38 +57,38 @@ class CameraSensor:
         img = np.frombuffer(image, np.uint8).reshape((height, width, 4))
         img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
 
-        # ✅ Resize and format for YOLO
-        yolo_input = cv2.resize(img, (416, 416))  # Resize to (416, 416)
+        # Resize and format for YOLO input
+        yolo_input = cv2.resize(img, (416, 416))
         yolo_input = yolo_input.astype(np.float32) / 255.0
-        yolo_input = np.transpose(yolo_input, (2, 0, 1))  # Convert to (3, 416, 416)
-        yolo_input = np.expand_dims(yolo_input, axis=0)  # Add batch dimension -> (1, 3, 416, 416)
+        yolo_input = np.transpose(yolo_input, (2, 0, 1))  # (3, 416, 416)
+        yolo_input = np.expand_dims(yolo_input, axis=0)  # (1, 3, 416, 416)
 
         # Run YOLO inference
-        outputs = self.session.run(None, {"images": yolo_input})
-        detections = outputs[0]  # YOLO detections
+        try:
+            outputs = self.session.run(None, {"images": yolo_input})
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"Error during YOLO inference: {e}")
+            return img, False
 
+        detections = outputs[0]
         fire_detected = False
 
-        for det in detections.T:  # Iterate over detections
-            x1, y1, x2, y2 = det[:4]  # Extract bounding box
+        # Iterate over detections
+        for det in detections:
+            x1, y1, x2, y2 = det[:4]
+            class_id = int(det[5])  # Assuming class_id is at index 5
             conf = det[4]  # Confidence score
-            class_scores = det[5:]  # Class scores (probabilities)
 
-            class_id = np.argmax(class_scores)  # Get the class with the highest probability
-            class_conf = class_scores[class_id]  # Confidence of that class
-
-            if class_id == 0 and class_conf > 0.9:  # Fire class detected
+            if class_id == 0 and conf > 0.9:  # Fire class with high confidence
                 fire_detected = True
-                x1, y1 = float(x1), float(y1)  # Convert NumPy arrays to scalars
-
                 if self.logger:
-                    self.logger.info(f"🔥 Fire detected by {self.device_name} at ({x1:.2f}, {y1:.2f})!")
+                    self.logger.info(f"🔥 Fire detected at ({x1:.2f}, {y1:.2f}) with confidence {conf:.2f}.")
 
                 # Draw bounding box
                 cv2.rectangle(img, (int(x1), int(y1)), (int(x2), int(y2)), (0, 0, 255), 2)
                 cv2.putText(img, "FIRE!", (int(x1), int(y1) - 10),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
-
-                break  # Stop after detecting one fire instance
+                break  # Stop after one detection
 
         return img, fire_detected

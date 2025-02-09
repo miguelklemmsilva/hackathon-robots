@@ -117,31 +117,37 @@ class RotationDirection(Enum):
 
 WEBSOCKET_URL = "wss://lqq17im9ld.execute-api.eu-west-2.amazonaws.com/dev/"
 
-async def websocket_client(logger):
+async def websocket_client(logger, gps_sensor, lidar_sensor):
     """Handles WebSocket communication with AWS API Gateway."""
     try:
         async with websockets.connect(WEBSOCKET_URL) as ws:
             logger.info(f"Connected to WebSocket server: {WEBSOCKET_URL}")
-            
+
             while True:
-                # Send a message periodically
+                # Collect sensor data
+                gps_values = gps_sensor.get_values()
+                lidar_min_distance = lidar_sensor.get_min_distance()
                 utc_datetime = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+                sensor_data = {
+                    "type": "sensor_data",
+                    "timestamp": utc_datetime,
+                    "gps": {"x": gps_values[0], "y": gps_values[1], "z": gps_values[2]},
+                    "lidar": {"min_distance": lidar_min_distance}
+                }
+
+                 # Prepare the message with "action" and "payload"
                 message = {
                     "action": "broadcast",
-                    "message": f"message at timestamp: {utc_datetime}"
+                    "payload": sensor_data
                 }
+
+                # Send the sensor data
                 await ws.send(json.dumps(message))
-                logger.info(f"Sent message: {message}")
+                logger.info(f"Sent sensor data: {message}")
 
-                # Wait for a response (optional)
-                try:
-                    response = await asyncio.wait_for(ws.recv(), timeout=5.0)
-                    logger.info(f"Received response: {response}")
-                except asyncio.TimeoutError:
-                    logger.warning("No response from WebSocket server.")
-
-                # Wait for a 30 seconds before sending the next message
-                await asyncio.sleep(30)
+                # Wait for 5 seconds before sending the next sensor data
+                await asyncio.sleep(5.0)
 
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
@@ -231,7 +237,7 @@ async def main():
     logger.info(f"Estimated Position: {estimated_pos}")
 
     # create an asyncio task for the websocket client
-    websocket_task = asyncio.create_task(websocket_client(logger))
+    websocket_task = asyncio.create_task(websocket_client(logger, gps_sensor, lidar_sensor))
 
     fire_detection_task = asyncio.create_task(fire_detection_loop(logger, camera_sensors, leds))
 
