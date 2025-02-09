@@ -158,9 +158,10 @@ async def main():
 
     # Define patrol waypoints (x, z coordinates)
     patrol_points = [
-        (0.0, 5.0),    # 5 meters forward
-        (5.0, 5.0),    # 5 meters right
-        (10.0, 0.0),    # 5 meters back
+        (7.18, 0.0),    # 5 meters forward
+        (11.04, -4.11),    # 5 meters right
+        (3.96, 7.65),    # 5 meters back
+        (11.04, 11.84),    # 5 meters left
         (0.0, 0.0)
     ]
 

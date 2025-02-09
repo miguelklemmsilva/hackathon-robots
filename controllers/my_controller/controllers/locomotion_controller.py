@@ -185,7 +185,7 @@ class LocomotionController:
             if time_avoiding > self.max_avoidance_time:
                 self.logger.info("Switching avoidance direction after timeout")
                 self.avoidance_direction = (RotationDirection.RIGHT
-                                            if self.avoidance_direction == RotationDirection.LEFT
+                                            if self.avoidance_direction == RotationDirection.RIGHT
                                             else RotationDirection.LEFT)
                 self.avoidance_start_time = current_time
                 self.forward_recovery_attempts = 0
@@ -221,18 +221,18 @@ class LocomotionController:
             # Determine best avoidance direction
             if obstacles['center']:
                 if obstacles['left'] and not obstacles['right']:
-                    self.avoidance_direction = RotationDirection.RIGHT
-                elif obstacles['right'] and not obstacles['left']:
                     self.avoidance_direction = RotationDirection.LEFT
+                elif obstacles['right'] and not obstacles['left']:
+                    self.avoidance_direction = RotationDirection.RIGHT
                 else:
                     # When both sides are blocked or clear, maintain previous direction if it exists
                     self.avoidance_direction = (RotationDirection.RIGHT
                                                 if not hasattr(self, 'last_avoidance_direction')
                                                 else self.last_avoidance_direction)
             elif obstacles['left']:
-                self.avoidance_direction = RotationDirection.RIGHT
-            else:  # obstacle on right
                 self.avoidance_direction = RotationDirection.LEFT
+            else:  # obstacle on right
+                self.avoidance_direction = RotationDirection.RIGHT
 
             self.set_rotation(self.avoidance_direction,
                               turn_rate_multiplier=1.2)
