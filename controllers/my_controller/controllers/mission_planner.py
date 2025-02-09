@@ -92,6 +92,10 @@ class MissionPlanner:
 
         current_pos = (gps_values[0], gps_values[1])
 
+        if not self.patrol_points:
+            self.logger.info("No patrol points available.")
+            return
+        
         # Check if we've reached the current waypoint
         if self.check_waypoint_reached(current_pos):
             self.advance_to_next_waypoint()

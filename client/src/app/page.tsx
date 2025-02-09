@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { Line, Scatter } from "react-chartjs-2";
 import {
@@ -172,15 +172,23 @@ export default function Home() {
               value={yCoordinate}
               onChange={(e) => setYCoordinate(e.target.value)}
             />
-            <Button onClick={handleSendCoordinates}>Send Command</Button>
+            <Button
+              className={`bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 active:scale-95 shadow-md ${
+                readyState !== ReadyState.OPEN
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
+              onClick={handleSendCoordinates}
+              disabled={readyState !== ReadyState.OPEN}
+            >
+              Send Command
+            </Button>
           </div>
         </div>
 
         {/* Real-Time Sensor Data Table */}
         <div className="bg-white p-6 mt-8 rounded-lg shadow-md overflow-auto max-h-[500px]">
-          <h2 className="text-xl font-semibold mb-4">
-            Real-Time Sensor Data
-          </h2>
+          <h2 className="text-xl font-semibold mb-4">Real-Time Sensor Data</h2>
           {sensorData.length > 0 ? (
             <table className="table-auto w-full border-collapse border border-gray-200">
               <thead>
@@ -203,9 +211,7 @@ export default function Home() {
                 {sensorData.map((data, idx) => (
                   <tr
                     key={idx}
-                    className={`${
-                      idx % 2 === 0 ? "bg-white" : "bg-gray-50"
-                    }`}
+                    className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
                   >
                     <td className="border border-gray-300 px-4 py-2">
                       {new Date(data.timestamp * 1000).toLocaleTimeString()}

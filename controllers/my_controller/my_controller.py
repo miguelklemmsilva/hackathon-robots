@@ -98,45 +98,107 @@ class RotationDirection(Enum):
 
 WEBSOCKET_URL = "wss://lqq17im9ld.execute-api.eu-west-2.amazonaws.com/dev/"
 
-async def websocket_client(logger, gps_sensor, lidar_sensor, inertial_unit_sensor, accelerometer_sensor, gyro_sensor, compass_sensor):
+# async def websocket_client(logger, gps_sensor, lidar_sensor, inertial_unit_sensor, accelerometer_sensor, gyro_sensor, compass_sensor):
+#     """Handles WebSocket communication with AWS API Gateway."""
+#     try:
+#         async with websockets.connect(WEBSOCKET_URL) as ws:
+#             logger.info(f"Connected to WebSocket server: {WEBSOCKET_URL}")
+
+#             while True:
+#                 # Collect sensor data
+#                 gps_values = gps_sensor.get_values()
+#                 lidar_min_distance = lidar_sensor.get_min_distance()
+#                 heading = inertial_unit_sensor.get_heading()
+#                 epoch_time = int(datetime.now(timezone.utc).timestamp())
+#                 utc_datetime = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+
+#                 sensor_data = {
+#                     "type": "sensor_data",
+#                     "timestamp": epoch_time,
+#                     "gps": {"x": gps_values[0], "y": gps_values[1], "z": gps_values[2]},
+#                     "lidar": {"min_distance": lidar_min_distance},
+#                     "inertial_unit": {"heading": heading},
+#                     # "accelerometer": {"x": acceleration[0], "y": acceleration[1], "z": acceleration[2]},
+#                     # "gyro": {"angular_velocity_x": angular_velocity[0], "angular_velocity_y": angular_velocity[1], "angular_velocity_z": angular_velocity[2]},
+#                 }
+
+#                  # Prepare the message with "action" and "payload"
+#                 message = {
+#                     "action": "broadcast",
+#                     "payload": sensor_data
+#                 }
+
+#                 message_size = len(json.dumps(message).encode("utf-8"))
+#                 logger.info(f"Sending message of size: {message_size / 1024:.2f} KB")
+
+#                 # Send the sensor data
+#                 await ws.send(json.dumps(message))
+#                 logger.info(f"Sent sensor data: {message}")
+
+#                 # Wait for 5 seconds before sending the next sensor data
+#                 await asyncio.sleep(5.0)
+
+#     except Exception as e:
+#         logger.error(f"WebSocket error: {e}")
+
+async def websocket_client(logger, gps_sensor, lidar_sensor, inertial_unit_sensor, mission_planner):
     """Handles WebSocket communication with AWS API Gateway."""
     try:
         async with websockets.connect(WEBSOCKET_URL) as ws:
             logger.info(f"Connected to WebSocket server: {WEBSOCKET_URL}")
 
-            while True:
-                # Collect sensor data
-                gps_values = gps_sensor.get_values()
-                lidar_min_distance = lidar_sensor.get_min_distance()
-                heading = inertial_unit_sensor.get_heading()
-                epoch_time = int(datetime.now(timezone.utc).timestamp())
-                utc_datetime = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+            async def send_sensor_data():
+                """Send sensor data every 5 seconds."""
+                while True:
+                    gps_values = gps_sensor.get_values()
+                    lidar_min_distance = lidar_sensor.get_min_distance()
+                    heading = inertial_unit_sensor.get_heading()
+                    epoch_time = int(datetime.now(timezone.utc).timestamp())
 
-                sensor_data = {
-                    "type": "sensor_data",
-                    "timestamp": epoch_time,
-                    "gps": {"x": gps_values[0], "y": gps_values[1], "z": gps_values[2]},
-                    "lidar": {"min_distance": lidar_min_distance},
-                    "inertial_unit": {"heading": heading},
-                    # "accelerometer": {"x": acceleration[0], "y": acceleration[1], "z": acceleration[2]},
-                    # "gyro": {"angular_velocity_x": angular_velocity[0], "angular_velocity_y": angular_velocity[1], "angular_velocity_z": angular_velocity[2]},
-                }
+                    sensor_data = {
+                        "type": "sensor_data",
+                        "timestamp": epoch_time,
+                        "gps": {"x": gps_values[0], "y": gps_values[1], "z": gps_values[2]},
+                        "lidar": {"min_distance": lidar_min_distance},
+                        "inertial_unit": {"heading": heading},
+                    }
 
-                 # Prepare the message with "action" and "payload"
-                message = {
-                    "action": "broadcast",
-                    "payload": sensor_data
-                }
+                    message = {"action": "broadcast", "payload": sensor_data}
+                    await ws.send(json.dumps(message))
+                    message_size = len(json.dumps(message).encode("utf-8"))
+                    logger.info(f"Sent sensor data of size: {message_size / 1024:.2f} KB")
 
-                message_size = len(json.dumps(message).encode("utf-8"))
-                logger.info(f"Sending message of size: {message_size / 1024:.2f} KB")
+                    await asyncio.sleep(2.0)  # Send data every 5 seconds
 
-                # Send the sensor data
-                await ws.send(json.dumps(message))
-                logger.info(f"Sent sensor data: {message}")
+            async def receive_move_commands(ws, logger, mission_planner):
+                """Listen for incoming move commands and update the mission planner."""
+                while True:
+                    try:
+                        message = await ws.recv()
+                        logger.info(f"Received raw message: {message}")  # Log the raw message
+                        parsed_message = json.loads(message)
 
-                # Wait for 5 seconds before sending the next sensor data
-                await asyncio.sleep(5.0)
+                        if "payload" in parsed_message:
+                            payload = parsed_message["payload"]
+
+                            if payload.get("type") == "move_command":
+                                coordinates = payload.get("coordinates", {})
+                                x = coordinates.get("x")
+                                y = coordinates.get("y")
+                                if x is not None and y is not None:
+                                    logger.info(f"Received move command: ({x}, {y})")
+                                    mission_planner.set_patrol_path([(x, y)])
+                                    mission_planner.logger.info(f"Overwriting patrol path to move to: ({x}, {y})")
+                        else:
+                            logger.warning("Received message with unknown action or missing payload.")
+
+                    except websockets.exceptions.ConnectionClosed as e:
+                        logger.error(f"WebSocket connection closed: {e}")
+                        break
+                    except Exception as e:
+                        logger.error(f"Error receiving move command: {e}")
+            # Run both tasks concurrently
+            await asyncio.gather(send_sensor_data(), receive_move_commands(ws, logger, mission_planner))
 
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
@@ -229,7 +291,7 @@ async def main():
     logger.info(f"Estimated Position: {estimated_pos}")
 
     # create an asyncio task for the websocket client
-    websocket_task = asyncio.create_task(websocket_client(logger, gps_sensor, lidar_sensor, inertial_unit_sensor, accelerometer_sensor, gyro_sensor, compass_sensor))
+    websocket_task = asyncio.create_task(websocket_client(logger, gps_sensor, lidar_sensor, inertial_unit_sensor, mission_planner))
 
     # fire_detection_task = asyncio.create_task(fire_detection_loop(logger, camera_sensors, leds))
 
