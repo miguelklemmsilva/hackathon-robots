@@ -11,7 +11,7 @@ between in-place rotations (left, right, and none) using the LocomotionControlle
 import asyncio
 import websockets
 import json
-import threading
+from datetime import datetime, timezone
 import numpy as np
 from sensors.inertial_unit_sensor import InertialUnitSensor
 from sensors.gps_sensor import GPSSensor
@@ -103,9 +103,10 @@ async def websocket_client(logger):
             
             while True:
                 # Send a message periodically
+                utc_datetime = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
                 message = {
                     "action": "broadcast",
-                    "message": f"message at timestamp: {asyncio.get_event_loop().time()}"
+                    "message": f"message at timestamp: {utc_datetime}"
                 }
                 await ws.send(json.dumps(message))
                 logger.info(f"Sent message: {message}")
