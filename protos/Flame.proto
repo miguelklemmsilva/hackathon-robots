@@ -1,0 +1,30 @@
+#VRML_SIM R2025a utf8
+PROTO Flame [
+  field SFVec3f translation 0 0 0  # Position of the flame
+]
+{
+  Transform {
+    translation IS translation
+    children [
+      Shape {
+        appearance PBRAppearance {
+          baseColorMap ImageTexture {
+            url ["textures/fire_texture.jpg"]  # Use an actual fire image
+          }
+          emissiveColor 1 0.5 0  # Orange glow
+        }
+        geometry Box {
+          size 0.5 0.5 1  # Adjust the size of the fire effect
+        }
+      }
+      PointLight {
+        color 1 0.3 0
+        intensity 3.0
+        radius 3.0
+        castShadows TRUE
+        attenuation 0 0 1 
+
+      }
+    ]
+  }
+}

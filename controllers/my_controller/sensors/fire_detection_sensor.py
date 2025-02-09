@@ -11,7 +11,7 @@ robot = Robot()
 timestep = int(robot.getBasicTimeStep())
 
 # Get Webots camera
-camera = robot.getDevice("camera")
+camera = robot.getDevice("right head camera")
 camera.enable(timestep)
 
 # Loop for fire detection
