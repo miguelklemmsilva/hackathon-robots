@@ -35,15 +35,14 @@ PROTO Spot [
     children [
       Lidar {
         name "Lidar"
-        translation 0 0.5 0.2  # adjust position so it has a good field of view
+        translation 0.3 0 0.3  # Moved forward and higher for better coverage
         rotation 0 1 0 0
         minRange 0.1
         maxRange 10.0
         resolution 0.01
         numberOfLayers 1
-        # Additional LiDAR-specific fields can be added here
-      	}
-      	
+        fieldOfView 6.28  # Full 360-degree view
+      }
       Accelerometer {
         name "accelerometer"
         translation 0 0.2 0    # Adjust translation as needed.
