@@ -131,14 +131,12 @@ async def websocket_client(logger, gps_sensor, lidar_sensor, inertial_unit_senso
                 gps_values = gps_sensor.get_values()
                 lidar_min_distance = lidar_sensor.get_min_distance()
                 heading = inertial_unit_sensor.get_heading()
-                # acceleration = accelerometer_sensor.get_acceleration()
-                # angular_velocity = gyro_sensor.get_angular_velocity()
-                # compass_bearing = compass_sensor.get_bearing()
+                epoch_time = int(datetime.now(timezone.utc).timestamp())
                 utc_datetime = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
 
                 sensor_data = {
                     "type": "sensor_data",
-                    "timestamp": utc_datetime,
+                    "timestamp": epoch_time,
                     "gps": {"x": gps_values[0], "y": gps_values[1], "z": gps_values[2]},
                     "lidar": {"min_distance": lidar_min_distance},
                     "inertial_unit": {"heading": heading},
