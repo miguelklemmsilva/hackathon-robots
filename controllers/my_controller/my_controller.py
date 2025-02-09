@@ -19,24 +19,8 @@ from sensors.gyro_sensor import GyroSensor
 from sensors.inertial_unit_sensor import InertialUnitSensor
 from sensors.gps_sensor import GPSSensor
 from controller import Robot
-import cv2
 import sys
 from enum import Enum
-
-import os
-print(f"Webots is using Python: {sys.executable}")
-print("Checking model path:", os.path.exists("runs/detect/train18/weights/best.onnx"))
-print("📂 Webots Working Directory:", os.getcwd())
-print("📁 Looking for model at:", os.path.abspath("runs/detect/train18/weights/best.onnx"))
-print("✅ Model Exists:", os.path.exists(os.path.abspath("runs/detect/train18/weights/best.onnx")))
-
-try:
-    import onnxruntime
-    print("✅ ONNX Runtime is installed and working!")
-except ModuleNotFoundError:
-    print("❌ ONNX Runtime is NOT installed in this Python environment.")
-
-import onnxruntime
 
 from utils.config import TIME_STEP, MOTOR_NAMES, CAMERA_NAMES, LED_NAMES, LIDAR_NAME, GPS_NAME, INERTIAL_UNIT_NAME
 from utils.logger import setup_logger
@@ -49,12 +33,6 @@ from sensors.camera_sensor import CameraSensor
 
 
 import math
-
-import onnxruntime
-print("ONNX Runtime is installed and working!")
-
-print("hello whatsup")
-print(sys.executable)
 
 # UWB anchor positions (x, y, z)
 anchors = [
@@ -226,9 +204,10 @@ async def main():
 
     # Define patrol waypoints (x, z coordinates)
     patrol_points = [
-        (0.0, 5.0),    # 5 meters forward
-        (5.0, 5.0),    # 5 meters right
-        (10.0, 0.0),    # 5 meters back
+        (7.18, 0.0),    # 5 meters forward
+        (11.04, -4.11),    # 5 meters right
+        (3.96, 7.65),    # 5 meters back
+        (11.04, 11.84),    # 5 meters left
         (0.0, 0.0)
     ]
 
@@ -252,7 +231,7 @@ async def main():
     # create an asyncio task for the websocket client
     websocket_task = asyncio.create_task(websocket_client(logger, gps_sensor, lidar_sensor, inertial_unit_sensor, accelerometer_sensor, gyro_sensor, compass_sensor))
 
-    fire_detection_task = asyncio.create_task(fire_detection_loop(logger, camera_sensors, leds))
+    # fire_detection_task = asyncio.create_task(fire_detection_loop(logger, camera_sensors, leds))
 
 
     # Main simulation loop
@@ -284,7 +263,7 @@ async def main():
     # close websocket task once simulation ends
     websocket_task.cancel()
 
-    fire_detection_task.cancel()
+    # fire_detection_task.cancel()
 
 if __name__ == '__main__':
     # main()
