@@ -16,8 +16,24 @@ import numpy as np
 from sensors.inertial_unit_sensor import InertialUnitSensor
 from sensors.gps_sensor import GPSSensor
 from controller import Robot
+import cv2
 import sys
 from enum import Enum
+
+import os
+print(f"Webots is using Python: {sys.executable}")
+print("Checking model path:", os.path.exists("runs/detect/train18/weights/best.onnx"))
+print("📂 Webots Working Directory:", os.getcwd())
+print("📁 Looking for model at:", os.path.abspath("runs/detect/train18/weights/best.onnx"))
+print("✅ Model Exists:", os.path.exists(os.path.abspath("runs/detect/train18/weights/best.onnx")))
+
+try:
+    import onnxruntime
+    print("✅ ONNX Runtime is installed and working!")
+except ModuleNotFoundError:
+    print("❌ ONNX Runtime is NOT installed in this Python environment.")
+
+import onnxruntime
 
 from utils.config import TIME_STEP, MOTOR_NAMES, CAMERA_NAMES, LED_NAMES, LIDAR_NAME, GPS_NAME, INERTIAL_UNIT_NAME
 from utils.logger import setup_logger
@@ -30,6 +46,12 @@ from sensors.camera_sensor import CameraSensor
 
 
 import math
+
+import onnxruntime
+print("ONNX Runtime is installed and working!")
+
+print("hello whatsup")
+print(sys.executable)
 
 # UWB anchor positions (x, y, z)
 anchors = [
@@ -125,6 +147,7 @@ async def websocket_client(logger):
 
 async def main():
     # Instantiate the Webots robot and determine the time step.
+    print("ONNX Runtime is installed and working!")
     robot = Robot()
     time_step = int(robot.getBasicTimeStep())
     logger = setup_logger('spot', 'spot_autonomous.log')
@@ -207,11 +230,39 @@ async def main():
         # Update the locomotion controller to compute and apply motor positions
         locomotion_controller.update()
 
+<<<<<<< Updated upstream
         # give control to the event loopto allow async tasks to run
         await asyncio.sleep(0)
     
     # close websocket task once simulation ends
     websocket_task.cancel()
+=======
+        # Fire detection using cameras
+        for cam_name, cam in zip(CAMERA_NAMES, cameras):
+            logger.info("Looking for fire...")
+            frame, fire_detected = camera_sensors[cam_name].detect_fire()
+            
+            if fire_detected:
+                logger.info(f"🔥 Fire detected by {cam_name}! Stopping movement and activating response!")
+                
+                # Stop moving
+                locomotion_controller.set_rotation(RotationDirection.NONE.value, 0.0)
+                
+                # Blink LED lights
+                for led in leds:
+                    led.set(0)
+                robot.step(100)
+                for led in leds:
+                    led.set(1)
+                
+                # Log fire detection
+                logger.info("🔥 Fire response activated!")
+
+                # Show the fire detection window (for debugging)
+                cv2.imshow(f"Fire Detection - {cam_name}", frame)
+                cv2.waitKey(1)
+
+>>>>>>> Stashed changes
 
 if __name__ == '__main__':
     # main()
