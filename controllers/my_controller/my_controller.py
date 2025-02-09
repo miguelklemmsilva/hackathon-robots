@@ -7,6 +7,11 @@ to assume a standing posture, and then demonstrates locomotion by switching
 between in-place rotations (left, right, and none) using the LocomotionController API.
 """
 
+
+import asyncio
+import websockets
+import json
+import threading
 import numpy as np
 from sensors.inertial_unit_sensor import InertialUnitSensor
 from sensors.gps_sensor import GPSSensor
@@ -83,15 +88,42 @@ MOTOR_NAMES = [
 ]
 
 # Define an enum for intuitive rotation directions.
-
-
 class RotationDirection(Enum):
     LEFT = 1
     NONE = 0
     RIGHT = -1
 
+WEBSOCKET_URL = "wss://lqq17im9ld.execute-api.eu-west-2.amazonaws.com/dev/"
 
-def main():
+async def websocket_client(logger):
+    """Handles WebSocket communication with AWS API Gateway."""
+    try:
+        async with websockets.connect(WEBSOCKET_URL) as ws:
+            logger.info(f"Connected to WebSocket server: {WEBSOCKET_URL}")
+            
+            while True:
+                # Send a message periodically
+                message = {
+                    "action": "broadcast",
+                    "message": f"message at timestamp: {asyncio.get_event_loop().time()}"
+                }
+                await ws.send(json.dumps(message))
+                logger.info(f"Sent message: {message}")
+
+                # Wait for a response (optional)
+                try:
+                    response = await asyncio.wait_for(ws.recv(), timeout=5.0)
+                    logger.info(f"Received response: {response}")
+                except asyncio.TimeoutError:
+                    logger.warning("No response from WebSocket server.")
+
+                # Wait for a 30 seconds before sending the next message
+                await asyncio.sleep(30)
+
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+
+async def main():
     # Instantiate the Webots robot and determine the time step.
     robot = Robot()
     time_step = int(robot.getBasicTimeStep())
@@ -148,6 +180,9 @@ def main():
     estimated_pos = trilaterate(anchors, distances)
     logger.info(f"Estimated Position: {estimated_pos}")
 
+    # create an asyncio task for the websocket client
+    websocket_task = asyncio.create_task(websocket_client(logger))
+
     # Main simulation loop
     while robot.step(time_step) != -1:
         # Get sensor data
@@ -171,6 +206,12 @@ def main():
         # Update the locomotion controller to compute and apply motor positions
         locomotion_controller.update()
 
+        # give control to the event loopto allow async tasks to run
+        await asyncio.sleep(0)
+    
+    # close websocket task once simulation ends
+    websocket_task.cancel()
 
 if __name__ == '__main__':
-    main()
+    # main()
+    asyncio.run(main())
