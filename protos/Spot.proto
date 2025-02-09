@@ -51,6 +51,8 @@ PROTO Spot [
       }
       InertialUnit {
       }
+      Compass {
+      }
       LED {
         translation 0.505323 0.081967 0.050721
         rotation 0.868733 0.480612 0.119642 1.875866
