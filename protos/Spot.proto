@@ -35,23 +35,30 @@ PROTO Spot [
     children [
       Lidar {
         name "Lidar"
-        translation 0 0.5 0.2  # adjust position so it has a good field of view
+        translation 0.3 0 0.3  # Moved forward and higher for better coverage
         rotation 0 1 0 0
         minRange 0.1
         maxRange 10.0
         resolution 0.01
         numberOfLayers 1
-        # Additional LiDAR-specific fields can be added here
-      	}
+        fieldOfView 2.0944  # Full 360-degree view
+      }
       Accelerometer {
+        name "accelerometer"
+        translation 0 0.2 0    # Adjust translation as needed.
+        rotation 0 1 0 0
       }
+      
+      # GPS sensor: provides position data.
       GPS {
+        name "gps"
+        translation 0 0.1 0    # Adjust translation as needed.
+        rotation 0 1 0 0
       }
+
       Gyro {
       }
       InertialUnit {
-      }
-      Compass {
       }
       LED {
         translation 0.505323 0.081967 0.050721
@@ -251,26 +258,18 @@ PROTO Spot [
             ]
           }
           Camera {
-            translation 0.044898 1.677970 0.922603
+            translation 0.044898 1.677970 -0.922603
             rotation 0.492404 -0.738106 -0.461236 -2.507618
             name "right head camera"
             width 1080
             height 720
           }
           Camera {
-            translation -0.045109 1.679550 0.923250
+            translation -0.045109 1.679550 -0.923250
             rotation 0.776783 -0.539742 -0.324480 -2.231426
             name "left head camera"
             width 1080
             height 720
-          }
-          Camera {
-            translation 0.0 1.68 0.92  # Adjust the position so it aligns with the head cameras
-            rotation 0 0 1 0  # Keep the same orientation as other head cameras
-            name "thermal_camera"
-            width 640
-            height 480
-            fieldOfView 1.57
           }
           DEF HEAD_CAM_R1 Shape {
             appearance DEF LENS PBRAppearance {

@@ -233,7 +233,7 @@ async def main():
     # create an asyncio task for the websocket client
     websocket_task = asyncio.create_task(websocket_client(logger, gps_sensor, lidar_sensor, inertial_unit_sensor, accelerometer_sensor, gyro_sensor, compass_sensor))
 
-    fire_detection_task = asyncio.create_task(fire_detection_loop(logger, camera_sensors, leds))
+    # fire_detection_task = asyncio.create_task(fire_detection_loop(logger, camera_sensors, leds))
 
 
     # Main simulation loop
@@ -265,7 +265,7 @@ async def main():
     # close websocket task once simulation ends
     websocket_task.cancel()
 
-    fire_detection_task.cancel()
+    # fire_detection_task.cancel()
 
 if __name__ == '__main__':
     # main()
