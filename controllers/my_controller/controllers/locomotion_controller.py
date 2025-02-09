@@ -79,8 +79,15 @@ class LocomotionController:
         self.avoiding_obstacle = False
         self.avoidance_direction = None
         self.avoidance_start_time = None
-        self.min_avoidance_time = 2.0  # Minimum time to maintain avoidance behavior
-        self.max_avoidance_time = 5.0  # Maximum time before giving up current avoidance
+        self.min_avoidance_time = 4.0  # Increased minimum turning time
+        self.max_avoidance_time = 8.0  # Increased maximum avoidance time
+        # Increased cooldown to prevent rapid switching
+        self.post_avoidance_cooldown = 3.0
+        self.last_avoidance_end_time = 0
+        self.forward_recovery_time = 2.0  # Increased forward movement time
+        self.forward_recovery_attempts = 0
+        self.max_recovery_attempts = 3
+        self.recovery_angle_threshold = math.pi / 6  # 30 degrees
 
     def set_gait(self, duration, rotation_direction=0, turn_rate_multiplier=1.0):
         """
@@ -165,6 +172,11 @@ class LocomotionController:
         """
         current_time = self.robot.getTime()
 
+        # Don't start new avoidance during cooldown period
+        if (not self.avoiding_obstacle and
+                current_time - self.last_avoidance_end_time < self.post_avoidance_cooldown):
+            return False
+
         # Check if we should continue existing avoidance maneuver
         if self.avoiding_obstacle:
             time_avoiding = current_time - self.avoidance_start_time
@@ -176,22 +188,41 @@ class LocomotionController:
                                             if self.avoidance_direction == RotationDirection.LEFT
                                             else RotationDirection.LEFT)
                 self.avoidance_start_time = current_time
+                self.forward_recovery_attempts = 0
                 self.set_rotation(self.avoidance_direction,
                                   turn_rate_multiplier=1.5)
                 return True
 
-            # Continue current avoidance if minimum time hasn't elapsed
-            if time_avoiding < self.min_avoidance_time:
+            # After minimum turning time, try moving forward if path is clear
+            if time_avoiding > self.min_avoidance_time:
+                # Only attempt forward movement if center is clear and we haven't exceeded attempts
+                if not obstacles['center'] and self.forward_recovery_attempts < self.max_recovery_attempts:
+                    # Check if side sectors are relatively clear
+                    side_clear = (
+                        not obstacles['left'] and not obstacles['right'])
+                    if side_clear:
+                        self.set_gait(self.forward_recovery_time,
+                                      RotationDirection.NONE, 0.5)
+                        self.forward_recovery_attempts += 1
+                        self.logger.info(
+                            f"Attempting forward recovery ({self.forward_recovery_attempts}/{self.max_recovery_attempts})")
+                    else:
+                        # Continue turning if sides are blocked
+                        self.set_rotation(
+                            self.avoidance_direction, turn_rate_multiplier=1.2)
+                else:
+                    # Resume turning if forward path is blocked or too many attempts
+                    self.set_rotation(self.avoidance_direction,
+                                      turn_rate_multiplier=1.2)
                 return True
 
-            # Check if path is clear
-            if not obstacles['center']:
-                return True
+            return True
 
         # Start new avoidance maneuver if needed
-        if not self.avoiding_obstacle and (obstacles['center'] or obstacles['left'] or obstacles['right']):
+        if obstacles['center'] or obstacles['left'] or obstacles['right']:
             self.avoiding_obstacle = True
             self.avoidance_start_time = current_time
+            self.forward_recovery_attempts = 0
 
             # Determine best avoidance direction
             if obstacles['center']:
@@ -200,8 +231,10 @@ class LocomotionController:
                 elif obstacles['right'] and not obstacles['left']:
                     self.avoidance_direction = RotationDirection.LEFT
                 else:
-                    # When both sides are blocked or clear, choose based on mission goal
-                    self.avoidance_direction = RotationDirection.RIGHT
+                    # When both sides are blocked or clear, maintain previous direction if it exists
+                    self.avoidance_direction = (RotationDirection.RIGHT
+                                                if not hasattr(self, 'last_avoidance_direction')
+                                                else self.last_avoidance_direction)
             elif obstacles['left']:
                 self.avoidance_direction = RotationDirection.RIGHT
             else:  # obstacle on right
@@ -219,8 +252,9 @@ class LocomotionController:
         """Reset obstacle avoidance state and resume normal movement"""
         if self.avoiding_obstacle:
             self.avoiding_obstacle = False
+            self.last_avoidance_direction = self.avoidance_direction
             self.avoidance_direction = None
-            self.avoidance_start_time = None
+            self.last_avoidance_end_time = self.robot.getTime()
             self.set_gait(5.0, RotationDirection.NONE)
             self.logger.info("Resuming normal movement")
 

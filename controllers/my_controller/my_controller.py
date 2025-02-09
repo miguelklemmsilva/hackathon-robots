@@ -142,7 +142,7 @@ async def main():
             sys.exit(0)
 
     # Initialize sensor interfaces.
-    lidar_sensor = LidarSensor(robot, LIDAR_NAME, time_step, logger=logger)
+    lidar_sensor = LidarSensor(robot, 'Lidar', time_step, logger=logger)
     camera_sensors = {name: CameraSensor(
         robot, name, time_step, logger=logger) for name in CAMERA_NAMES}
     gps_sensor = GPSSensor(robot, GPS_NAME, time_step, logger=logger)
